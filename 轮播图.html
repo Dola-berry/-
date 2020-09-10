@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        * {
+            padding: 0;
+            margin: 0;
+        }
+
+        ul {
+            list-style: none;
+        }
+
+        .b_bigimg {
+            position: relative;
+            width: 760px;
+            height: 270px;
+            overflow: hidden;
+        }
+
+        .b_bigimg .img {
+            position: absolute;
+        }
+
+        .b_bigimg .img li {
+            float: left;
+            width: 760px;
+        }
+
+        .b_bigimg .img li img {
+            width: 760px;
+        }
+
+        .b_bigimg .btn {
+            position: absolute;
+            top: 50%;
+            width: 16px;
+            height: 23px;
+            background: url(./img/icons.png) no-repeat 0 -388px;
+        }
+
+        .b_bigimg .btnLe {
+            left: 12px;
+        }
+
+        .b_bigimg .btnRi {
+            right: 12px;
+            background-position-y: -428px;
+        }
+
+        .b_bigimg .dot {
+            position: absolute;
+            bottom: 9px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .b_bigimg .dot li {
+            float: left;
+            width: 11px;
+            height: 11px;
+            background-color: #9f9f9f;
+            border-radius: 50%;
+            margin: 0 5px;
+        }
+
+        .b_bigimg .dot .act {
+            background-color: #cecece;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="b_bigimg">
+        <ul class="img">
+            <!-- <li><img src="img/slide.jpg" alt="1"></li> -->
+        </ul>
+        <div class="btnLe btn"></div>
+        <div class="btnRi btn"></div>
+        <ul class="dot">
+            <!-- <li></li> -->
+        </ul>
+    </div>
+    <script src="./ajax.js"></script>
+    <script src="./my.js"></script>
+    <script>
+        let b_bigimg = document.querySelector('.b_bigimg');
+        let img = document.querySelector('.img');
+        let btnLe = document.querySelector('.btnLe');
+        let btnRi = document.querySelector('.btnRi');
+        let dot = document.querySelector('.dot');
+        // let widthImg = img.
+        ajax('banner.json', 'get', '', function (res) {
+            let res1 = JSON.parse(res);
+            for (let i = 0; i < res1.length; i++) {
+                // 动态生成
+                let li = document.createElement('li');
+                let lis = document.createElement('li');
+                // 将图片渲染给li
+                li.innerHTML = '<img  src=' + res1[i] + ' alt="banner' + (i + 1) + '"></img>';
+                // 渲染到页面
+                img.appendChild(li);
+                dot.appendChild(lis);
+            }
+            // 克隆一个假0
+            let fade = img.children[0].cloneNode(true);
+            // console.log(fade);
+
+            img.appendChild(fade);
+            // 默认第一个圆点
+            dot.children[0].className = 'act';
+            let bannerLi = img.querySelectorAll('li');
+            let liw = document.querySelector('li');
+            // ul的宽度
+            img.style.width = bannerLi.length * 760 + 'px';
+            let timer = null;
+            let n = 0;
+            // 自动轮播封装
+            function auto() {
+                if (n >= bannerLi.length - 1) {
+                    img.style.left = 0;
+                    n = 0;
+                }
+                n++;
+                if (n < 0) {
+                    n = bannerLi.length - 1;
+                    img.style.left = -n * 760 + 'px';
+                    n--;
+                }
+                // 排他思想  干掉所有人
+                for (let i = 0; i < dot.children.length; i++) {
+                    dot.children[i].className = '';
+                }
+                if (n >= bannerLi.length - 1) {
+                    dot.children[0].className = 'act';
+                } else {
+                    // 只留下自己
+                    dot.children[n].className = 'act';
+                }
+                // left值
+                let end = -n * 760;
+                // 调用动画函数
+                bufferMove(img, { left: end });
+            }
+            // 每三秒切换图片
+            timer = setInterval(auto, 3000);
+            // 1.21鼠标移入结束定时器
+            b_bigimg.onmouseover = function () {
+                // console.log(1);
+                clearInterval(timer);
+            }
+            // 1.22鼠标移出继续
+            b_bigimg.onmouseout = function () {
+                timer = setInterval(auto, 3000);
+            }
+            // 1.4点击右按钮往右走
+            btnRi.onclick = auto;
+            // 往左走
+            btnLe.onclick = function () {
+                n -= 2;
+                auto();
+            }
+            let lis = document.querySelectorAll('.dot li');
+            // 1.3点击原点获取对应下标图片
+            for (let i = 0; i < lis.length; i++) {
+                // 闭包写法
+                (function (a) {
+                    lis[a].onclick = function () {
+                        // console.log(lis[a]);
+                        let end = -a * 760;
+                        bufferMove(img, { left: end });
+                        // 排他思想
+                        for (let k = 0; k < lis.length; k++) {
+                            lis[k].className = '';
+                        }
+                        lis[a].className = 'act';
+                        // 将当前索引号赋值给变量n
+                        n = a;
+                    }
+                })(i);
+            }
+        })
+    </script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <!-- <button>点击显示</button> -->
+    <!-- <div></div> -->
+    <!-- <script src="../my.js"></script> -->
+    <!-- <script> -->
+    <!-- // console.log(getRandom(5,1));
+        
+        // //点击按钮 显示div 点击除了按钮的任意位置 隐藏div
+        // let btn = document.querySelector('button');
+        // let div = document.querySelector('div');
+        // btn.addEventListener('click',function(){
+        //     div.style.display = 'block';
+        // });
+        // document.addEventListener('click',function(){
+        //     div.style.display = 'none';
+        // },true) -->
+
+    <!-- </script> -->
+</body>
+
+</html>
